@@ -606,9 +606,11 @@ class Image
      * @return $this
      * @throws ImageException
      */
-    public function text($text, $font, $size, $color = '#00000000', $locate = self::WATER_SOUTHEAST, $offset = 0, $angle = 0)
+    public function text($text, $font = null, $size = 14, $color = '#00000000', $locate = self::WATER_SOUTHEAST, $offset = 0, $angle = 0)
     {
-
+        if ($font === null) {
+            $font = __dir__ . '/text.ttf';
+        }
         if (!is_file($font)) {
             throw new ImageException("不存在的字体文件：{$font}");
         }
