@@ -730,7 +730,8 @@ class Image
      */
     public function __destruct()
     {
-        is_resource($this->im) && imagedestroy($this->im);
+        //不能销毁,如果图片资源返回的话会无效
+        // is_resource($this->im) && imagedestroy($this->im);
     }
 
 }
