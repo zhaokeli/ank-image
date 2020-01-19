@@ -13,18 +13,29 @@ namespace ank\image\gif;
 
 class Decoder
 {
-    public $GIF_buffer = [];
     public $GIF_arrays = [];
-    public $GIF_delays = [];
-    public $GIF_stream = "";
-    public $GIF_string = "";
+
     public $GIF_bfseek = 0;
-    public $GIF_screen = [];
-    public $GIF_global = [];
-    public $GIF_sorted;
-    public $GIF_colorS;
+
+    public $GIF_buffer = [];
+
     public $GIF_colorC;
+
     public $GIF_colorF;
+
+    public $GIF_colorS;
+
+    public $GIF_delays = [];
+
+    public $GIF_global = [];
+
+    public $GIF_screen = [];
+
+    public $GIF_sorted;
+
+    public $GIF_stream = '';
+
+    public $GIF_string = '';
 
     /*
     :::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -69,28 +80,57 @@ class Decoder
     /*
     :::::::::::::::::::::::::::::::::::::::::::::::::::
     ::
-    ::    GIFReadExtension ( )
+    ::    GIFGetByte ( $len )
     ::
      */
-    public function readExtensions()
+    public function getByte($len)
     {
-        $this->getByte(1);
-        for (;;) {
-            $this->getByte(1);
-            if (($u = $this->GIF_buffer[0]) == 0x00) {
-                break;
+        $this->GIF_buffer = [];
+        for ($i = 0; $i < $len; $i++) {
+            if ($this->GIF_bfseek > strlen($this->GIF_stream)) {
+                return 0;
             }
-            $this->getByte($u);
-            /*
-             * 07.05.2007.
-             * Implemented a new line for a new function
-             * to determine the originaly delays between
-             * frames.
-             *
-             */
-            if (4 == $u) {
-                $this->GIF_delays[] = ($this->GIF_buffer[1] | $this->GIF_buffer[2] << 8);
-            }
+            $this->GIF_buffer[] = ord($this->GIF_stream[$this->GIF_bfseek++]);
+        }
+
+        return 1;
+    }
+
+    /*
+    :::::::::::::::::::::::::::::::::::::::::::::::::::
+    ::
+    ::    GIFGetDelays ( )
+    ::
+     */
+    public function getDelays()
+    {
+        return ($this->GIF_delays);
+    }
+
+    /*
+    :::::::::::::::::::::::::::::::::::::::::::::::::::
+    ::
+    ::    PUBLIC FUNCTIONS
+    ::
+    ::
+    ::    GIFGetFrames ( )
+    ::
+     */
+    public function getFrames()
+    {
+        return ($this->GIF_arrays);
+    }
+
+    /*
+    :::::::::::::::::::::::::::::::::::::::::::::::::::
+    ::
+    ::    GIFPutByte ( $bytes )
+    ::
+     */
+    public function putByte($bytes)
+    {
+        for ($i = 0; $i < count($bytes); $i++) {
+            $this->GIF_string .= chr($bytes[$i]);
         }
     }
 
@@ -119,7 +159,7 @@ class Decoder
         if ($GIF_sort) {
             $this->GIF_screen[4] |= 0x08;
         }
-        $this->GIF_string = "GIF87a";
+        $this->GIF_string = 'GIF87a';
         $this->putByte($this->GIF_screen);
         if (1 == $GIF_colorF) {
             $this->getByte(3 * $GIF_size);
@@ -151,56 +191,28 @@ class Decoder
     /*
     :::::::::::::::::::::::::::::::::::::::::::::::::::
     ::
-    ::    GIFGetByte ( $len )
+    ::    GIFReadExtension ( )
     ::
      */
-    public function getByte($len)
+    public function readExtensions()
     {
-        $this->GIF_buffer = [];
-        for ($i = 0; $i < $len; $i++) {
-            if ($this->GIF_bfseek > strlen($this->GIF_stream)) {
-                return 0;
+        $this->getByte(1);
+        for (;;) {
+            $this->getByte(1);
+            if (($u = $this->GIF_buffer[0]) == 0x00) {
+                break;
             }
-            $this->GIF_buffer[] = ord($this->GIF_stream{$this->GIF_bfseek++});
+            $this->getByte($u);
+            /*
+             * 07.05.2007.
+             * Implemented a new line for a new function
+             * to determine the originaly delays between
+             * frames.
+             *
+             */
+            if (4 == $u) {
+                $this->GIF_delays[] = ($this->GIF_buffer[1] | $this->GIF_buffer[2] << 8);
+            }
         }
-        return 1;
-    }
-
-    /*
-    :::::::::::::::::::::::::::::::::::::::::::::::::::
-    ::
-    ::    GIFPutByte ( $bytes )
-    ::
-     */
-    public function putByte($bytes)
-    {
-        for ($i = 0; $i < count($bytes); $i++) {
-            $this->GIF_string .= chr($bytes[$i]);
-        }
-    }
-
-    /*
-    :::::::::::::::::::::::::::::::::::::::::::::::::::
-    ::
-    ::    PUBLIC FUNCTIONS
-    ::
-    ::
-    ::    GIFGetFrames ( )
-    ::
-     */
-    public function getFrames()
-    {
-        return ($this->GIF_arrays);
-    }
-
-    /*
-    :::::::::::::::::::::::::::::::::::::::::::::::::::
-    ::
-    ::    GIFGetDelays ( )
-    ::
-     */
-    public function getDelays()
-    {
-        return ($this->GIF_delays);
     }
 }
